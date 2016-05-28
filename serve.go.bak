@@ -1,0 +1,28 @@
+package curbside
+
+import (
+	"fmt"
+	"math/rand"
+)
+
+func Serve() error {
+	numOfChild := [][]int{
+		[]int{3},
+		[]int{1, 4, 2},
+		[]int{2, 0, 1, 2, 4, 3, 3},
+		[]int{4, 3, 4, 4, 1, 2, 3, 4, 3, 1, 4, 2, 3, 1, 4},
+	}
+	db := make(map[string]*CurbsideRsp)
+	secret := "Apply with your code at systemd@shopcurbside.com"
+	id := 0
+
+	for k, v := range numOfChild {
+		for _, v := range v {
+			db.Add(k, v)
+		}
+	}
+	return nil
+}
+
+func nextID(startID int, n int) []string {
+}
