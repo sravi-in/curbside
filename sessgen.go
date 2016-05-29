@@ -17,15 +17,18 @@ type SessGen struct {
 }
 
 func NewSessGen(repeat int) *SessGen {
+	const numNextWorkers = 5
 	var sg SessGen
 	sg.repeat = repeat
-	sg.next = make(chan string)
+	sg.next = make(chan string, numNextWorkers)
 	sg.stop = make(chan struct{})
 	sg.Sess = make(chan string)
 
-	sg.wg.Add(2)
-	// Generate new session ID one after other in channel 'next'
-	go sg.genNext()
+	sg.wg.Add(numNextWorkers + 1)
+	// Generate and keep upto next 5 session IDs
+	for i := 0; i < numNextWorkers; i++ {
+		go sg.genNext()
+	}
 	go sg.genSess()
 
 	return &sg
@@ -33,7 +36,6 @@ func NewSessGen(repeat int) *SessGen {
 
 func (sg *SessGen) genNext() {
 	defer sg.wg.Done()
-	defer close(sg.next)
 	for {
 		select {
 		case <-sg.stop:
@@ -48,7 +50,6 @@ func (sg *SessGen) genSess() {
 	var ok bool
 	i := sg.repeat
 	defer sg.wg.Done()
-	defer close(sg.Sess)
 	for {
 		if i < sg.repeat {
 			select {
@@ -74,6 +75,8 @@ func (sg *SessGen) genSess() {
 func (sg *SessGen) Stop() {
 	close(sg.stop)
 	sg.wg.Wait()
+	close(sg.next)
+	close(sg.Sess)
 	// consume channel to prevent leaks
 	for range sg.next {
 	}
