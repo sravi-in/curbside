@@ -8,6 +8,7 @@ import (
 )
 
 //const ChallengeBaseURL = "http://challenge.shopcurbside.com/"
+
 const ChallengeBaseURL = "http://localhost:8000/"
 
 type ChallengeRsp struct {
