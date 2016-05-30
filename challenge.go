@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-//const ChallengeBaseURL = "http://challenge.shopcurbside.com/"
+const ChallengeBaseURL = "http://challenge.shopcurbside.com/"
 
-const ChallengeBaseURL = "http://localhost:8000/"
+//const ChallengeBaseURL = "http://localhost:8000/"
 
 type ChallengeRsp struct {
 	Depth    int         `json:"depth"`

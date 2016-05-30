@@ -6,9 +6,9 @@ import (
 	"sync"
 )
 
-//const getSessionURL = "http://challenge.shopcurbside.com/get-session"
+const getSessionURL = "http://challenge.shopcurbside.com/get-session"
 
-const getSessionURL = "http://localhost:8000/get-session"
+//const getSessionURL = "http://localhost:8000/get-session"
 
 type SessGen struct {
 	repeat int
