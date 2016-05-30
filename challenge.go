@@ -67,10 +67,16 @@ func UnmarshalRsp(body []byte) (*ChallengeRsp, error) {
 			rsp.Child = append(rsp.Child, v)
 		case []interface{}:
 			for _, id := range v {
-				if v, ok := id.(string); ok {
-					rsp.Child = append(rsp.Child, v)
+				v, ok := id.(string)
+				if !ok {
+					return nil,
+						fmt.Errorf("unexpected type while unmarshaling next: %s",
+							string(body))
 				}
+				rsp.Child = append(rsp.Child, v)
 			}
+		default:
+			return nil, fmt.Errorf("unexpected type while unmarshaling next: %s", string(body))
 		}
 
 		// values other than string & []string ignored
