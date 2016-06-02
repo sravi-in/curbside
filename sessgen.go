@@ -12,22 +12,27 @@ const getSessionURL = "http://localhost:8000/get-session"
 
 type SessGen struct {
 	repeat int
-	next   chan string
+	next   chan SessRsp
 	stop   chan struct{}
-	Sess   chan string
-	wg     sync.WaitGroup
+	Sess   chan SessRsp
+	sync.WaitGroup
+}
+
+type SessRsp struct {
+	sess string
+	err  error
 }
 
 func NewSessGen(repeat int) *SessGen {
 	const numNextWorkers = 3
 	var sg SessGen
 	sg.repeat = repeat
-	sg.next = make(chan string)
+	sg.next = make(chan SessRsp)
 	sg.stop = make(chan struct{})
-	sg.Sess = make(chan string)
+	sg.Sess = make(chan SessRsp)
 
-	sg.wg.Add(numNextWorkers + 1)
-	// Generate and keep upto next 5 session IDs
+	sg.Add(numNextWorkers + 1)
+	// Generate and keep upto next 3 session IDs
 	for i := 0; i < numNextWorkers; i++ {
 		go sg.genNext()
 	}
@@ -37,46 +42,46 @@ func NewSessGen(repeat int) *SessGen {
 }
 
 func (sg *SessGen) genNext() {
-	defer sg.wg.Done()
+	defer sg.Done()
 	for {
+		sess, err := getSession()
 		select {
 		case <-sg.stop:
 			return
-		case sg.next <- getSession():
+		case sg.next <- SessRsp{sess, err}:
 		}
 	}
 }
 
 func (sg *SessGen) genSess() {
-	var sess string
+	var rsp SessRsp
 	var ok bool
 	i := sg.repeat
-	defer sg.wg.Done()
+	defer sg.Done()
 	for {
-		if i < sg.repeat {
-			select {
-			case sg.Sess <- sess:
-				i++
-			case <-sg.stop:
+		select {
+		case rsp, ok = <-next:
+			if !ok {
 				return
 			}
-		} else {
-			select {
-			case sess, ok = <-sg.next:
-				if !ok {
-					return
-				}
-				i = 0
-			case <-sg.stop:
-				return
+			i = 0
+			current = sg.Sess
+			next = nil
+		case current <- rsp:
+			i++
+			if i == sg.repeat {
+				current = nil
+				next = sg.next
 			}
+		case <-sg.stop:
+			return
 		}
 	}
 }
 
 func (sg *SessGen) Stop() {
 	close(sg.stop)
-	sg.wg.Wait()
+	sg.Wait()
 	close(sg.next)
 	close(sg.Sess)
 	// consume channel to prevent leaks
@@ -86,18 +91,17 @@ func (sg *SessGen) Stop() {
 	}
 }
 
-func getSession() string {
+func getSession() (string, error) {
 	resp, err := http.Get(getSessionURL)
 	if err != nil {
-		//return "" //, fmt.Errorf("get session: %v", err)
-		panic("get session failed")
+		return "", fmt.Errorf("get session: %v", err)
 	}
 
 	defer resp.Body.Close()
 	sess, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "" //, fmt.Errorf("reading rsp from %s: %v", getSessionURL, err)
+		return "", fmt.Errorf("reading rsp from %s: %v", getSessionURL, err)
 	}
 
-	return string(sess) //, nil
+	return string(sess), nil
 }
