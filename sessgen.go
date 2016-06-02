@@ -19,10 +19,10 @@ type SessGen struct {
 }
 
 func NewSessGen(repeat int) *SessGen {
-	const numNextWorkers = 5
+	const numNextWorkers = 3
 	var sg SessGen
 	sg.repeat = repeat
-	sg.next = make(chan string, numNextWorkers)
+	sg.next = make(chan string)
 	sg.stop = make(chan struct{})
 	sg.Sess = make(chan string)
 
