@@ -78,8 +78,6 @@ func UnmarshalRsp(body []byte) (*ChallengeRsp, error) {
 		default:
 			return nil, fmt.Errorf("unexpected type while unmarshaling next: %s", string(body))
 		}
-
-		// values other than string & []string ignored
 	}
 
 	return rsp, nil

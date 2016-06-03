@@ -1,6 +1,7 @@
 package curbside
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -19,8 +20,8 @@ type SessGen struct {
 }
 
 type SessRsp struct {
-	sess string
-	err  error
+	Sess string
+	Err  error
 }
 
 func NewSessGen(repeat int) *SessGen {
@@ -56,6 +57,8 @@ func (sg *SessGen) genNext() {
 func (sg *SessGen) genSess() {
 	var rsp SessRsp
 	var ok bool
+	next := sg.next
+	var current chan SessRsp
 	i := sg.repeat
 	defer sg.Done()
 	for {
