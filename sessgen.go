@@ -25,7 +25,7 @@ type SessRsp struct {
 }
 
 func NewSessGen(repeat int) *SessGen {
-	const numNextWorkers = 3
+	const numNextWorkers = 6
 	var sg SessGen
 	sg.repeat = repeat
 	sg.next = make(chan SessRsp)
@@ -45,7 +45,7 @@ func NewSessGen(repeat int) *SessGen {
 func (sg *SessGen) genNext() {
 	defer sg.Done()
 	for {
-		sess, err := getSession()
+		sess, err := GetSession()
 		select {
 		case <-sg.stop:
 			return
@@ -94,7 +94,7 @@ func (sg *SessGen) Stop() {
 	}
 }
 
-func getSession() (string, error) {
+func GetSession() (string, error) {
 	resp, err := http.Get(getSessionURL)
 	if err != nil {
 		return "", fmt.Errorf("get session: %v", err)
