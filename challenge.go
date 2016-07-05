@@ -11,6 +11,8 @@ import (
 
 const ChallengeBaseURL = "http://localhost:8000/"
 
+// ChallengeRsp represents the unmarshaled json response from curbside
+// challenge query
 type ChallengeRsp struct {
 	Depth    int         `json:"depth"`
 	ID       string      `json:"id"`
@@ -21,7 +23,9 @@ type ChallengeRsp struct {
 	Child    []string
 }
 
-func QueryServer(session, id string) (*ChallengeRsp, error) {
+// Query performs a HTTP GET request to curbside challege API server
+// and returns JSON encoded response parsed as ChallengeRsp.
+func Query(session, id string) (*ChallengeRsp, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", ChallengeBaseURL+id, nil)
@@ -51,6 +55,8 @@ func QueryServer(session, id string) (*ChallengeRsp, error) {
 	return rsp, nil
 }
 
+// UnmarshalRsp parses and returns the JSON encoded data as a ChallengeRsp.
+// It returns error on failure to parse the data as ChallengeRsp.
 func UnmarshalRsp(body []byte) (*ChallengeRsp, error) {
 	rsp := new(ChallengeRsp)
 	if err := json.Unmarshal(body, rsp); err != nil {
